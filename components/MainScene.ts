@@ -119,7 +119,7 @@ export default class MainScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     // RNG: 20% chance of Flying Enemy, 80% Ground Spike
-    const isFlying = Math.random() > 0.8;
+    const isFlying = Math.random() > 0.5;
 
     let obstacle;
     if (isFlying) {

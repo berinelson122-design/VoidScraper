@@ -41,8 +41,11 @@ export class SoundManager {
     noise.start();
   }
 
-  private playTone(freq: number, type: OscillatorType, duration: number, endFreq?: number) {
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+private playTone(freq: number, type: OscillatorType, duration: number, endFreq?: number) {
+    // FORCE WAKE UP: If the browser paused us, resume immediately
+    if (this.ctx.state === 'suspended') {
+        this.ctx.resume();
+    }
     
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
