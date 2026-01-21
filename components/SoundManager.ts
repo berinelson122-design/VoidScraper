@@ -1,68 +1,47 @@
+/**
+ * VOID_WEAVER // AUDIO_MODULE
+ * SYNTH: OSCILLATOR_MATRIX
+ */
 export class SoundManager {
-  private ctx: AudioContext;
-  private masterGain: GainNode;
+  private ctx: AudioContext | null = null;
+  private gain: GainNode | null = null;
 
-  constructor() {
-    // Initialize Web Audio API
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    this.ctx = new AudioContextClass();
-    this.masterGain = this.ctx.createGain();
-    this.masterGain.gain.value = 0.3; // Volume 30%
-    this.masterGain.connect(this.ctx.destination);
+  init() {
+    if (this.ctx) return;
+    this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    this.gain = this.ctx.createGain();
+    this.gain.gain.value = 0.2;
+    this.gain.connect(this.ctx.destination);
   }
 
-  playJump() {
-    this.playTone(400, 'square', 0.1, 600); // Rising pitch (Jump)
+  private osc(f: number, type: OscillatorType, d: number, slide?: number) {
+    if (!this.ctx || !this.gain) return;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f, this.ctx.currentTime);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, this.ctx.currentTime + d);
+    g.gain.setValueAtTime(0.15, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
+    o.connect(g); g.connect(this.gain);
+    o.start(); o.stop(this.ctx.currentTime + d);
   }
 
-  playDoubleJump() {
-    this.playTone(600, 'sawtooth', 0.1, 800); // Higher pitch (Boost)
-  }
-
-  playScore() {
-    this.playTone(1000, 'sine', 0.05, 1000); // High ping (Coin)
-  }
-
-  playCrash() {
-    // Noise burst logic for crash
-    const bufferSize = this.ctx.sampleRate * 0.5; // 0.5 seconds
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
-    noise.connect(gain);
-    gain.connect(this.masterGain);
-    noise.start();
-  }
-
-private playTone(freq: number, type: OscillatorType, duration: number, endFreq?: number) {
-    // FORCE WAKE UP: If the browser paused us, resume immediately
-    if (this.ctx.state === 'suspended') {
-        this.ctx.resume();
-    }
-    
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-    if (endFreq) {
-      osc.frequency.linearRampToValueAtTime(endFreq, this.ctx.currentTime + duration);
-    }
-
-    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    
-    osc.start();
-    osc.stop(this.ctx.currentTime + duration);
+  jump() { this.osc(300, 'square', 0.1, 600); } // Rising zap
+  doubleJump() { this.osc(600, 'sawtooth', 0.15, 900); } // High zap
+  score() { this.osc(1200, 'sine', 0.05); } // Ping
+  
+  crash() {
+    if (!this.ctx || !this.gain) return;
+    const b = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.5, this.ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = this.ctx.createBufferSource();
+    s.buffer = b;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.4, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+    s.connect(g); g.connect(this.gain);
+    s.start();
   }
 }
