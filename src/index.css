@@ -3,7 +3,7 @@
 @theme {
   --color-cyber-red: #FF003C;
   --color-neon-violet: #E056FD;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-mono: "JetBrains Mono", "VT323", monospace;
 }
 
 :root {
@@ -13,28 +13,18 @@
 
 @layer base {
   body {
-    @apply m-0 overflow-hidden bg-black font-mono;
+    @apply m-0 overflow-hidden bg-black font-mono antialiased;
   }
 }
 
-/* BRUTALIST_SCANLINES_PROTOCOL */
-.scanlines {
+/* BRUTALIST_SCANLINES */
+.scanlines::after {
+  content: " ";
+  display: block;
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 50;
-  background: linear-gradient(
-    rgba(18, 18, 18, 0) 50%,
-    rgba(0, 0, 0, 0.25) 50%
-  );
+  z-index: 1000;
+  background: linear-gradient(rgba(18, 18, 18, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
   background-size: 100% 4px;
-}
-
-/* GLOW_MAP_UI */
-.neon-glow {
-  text-shadow: 0 0 10px theme('colors.neon-violet');
-}
-
-.alert-glow {
-  text-shadow: 0 0 15px theme('colors.cyber-red');
 }
