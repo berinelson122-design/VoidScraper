@@ -24,6 +24,11 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
+        this.physics.resume();
+        this.isDead = false;
+        this.jumpCount = 0;
+        this.score = 0;
+        this.gameSpeed = 400;
         this.audio = new AudioEngine();
         const { width, height } = this.scale;
 
@@ -108,7 +113,7 @@ export default class MainScene extends Phaser.Scene {
         this.gameSpeed = 400 + Math.floor(this.score / 200) * 20; // Scale speed
 
         // Clean up off-screen enemies
-        this.obstacles.getChildren().forEach((child: any) => {
+        [...this.obstacles.getChildren()].forEach((child: any) => {
             if (child.x < -50) {
                 child.destroy();
                 this.audio.playScore();
@@ -130,6 +135,8 @@ export default class MainScene extends Phaser.Scene {
         this.score = 0;
         this.gameSpeed = 400;
         this.isDead = false;
+        this.jumpCount = 0;
+        this.physics.resume();
         this.scene.restart();
     }
 }
